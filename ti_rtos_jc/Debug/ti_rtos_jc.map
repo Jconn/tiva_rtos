@@ -1,7 +1,11 @@
 ******************************************************************************
                   TI ARM Linker PC v5.2.4                      
 ******************************************************************************
+<<<<<<< HEAD
 >> Linked Sat Aug 22 20:46:01 2015
+=======
+>> Linked Sat Aug 22 16:55:07 2015
+>>>>>>> refs/remotes/origin/master
 
 OUTPUT FILE NAME:   <ti_rtos_jc.out>
 ENTRY POINT SYMBOL: "_c_int00"  address: 00000685
