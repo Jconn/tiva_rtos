@@ -11,6 +11,12 @@ void InitRtos(void);
 void SysCallHandler(uint8_t sysNumber);
 void TestFn(void);
 void SpawnThread(void (*fnpointer)(void) );
+/*
+ * Initial test for rolling an rtos
+ * onto the tiva tm4c123h6pmi MCU
+ * Author: John Connolly
+ *
+ */
 int main(){
 	InitRtos();
 	SpawnThread(&TestFn);

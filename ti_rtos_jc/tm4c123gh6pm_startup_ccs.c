@@ -4,7 +4,7 @@
 //
 // Copyright (c) 2011-2014 Texas Instruments Incorporated.  All rights reserved.
 // Software License Agreement
-// 
+//
 // Software License Agreement
 //
 // Texas Instruments (TI) is supplying this software for use solely and
@@ -270,7 +270,7 @@ NmiSR(void)
 // interrupt.  This simply enters an infinite loop, preserving the system state
 // for examination by a debugger.
 //
-//*****************************************************************************
+//************************************ *****************************************
 static void
 FaultISR(void)
 {
