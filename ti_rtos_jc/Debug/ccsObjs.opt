@@ -1,0 +1,1 @@
+"./contextSwitch.obj" "./main.obj" "./rtos_init.obj" "./sysCall.obj" "./tm4c123gh6pm_startup_ccs.obj" "../tm4c123gh6pm.cmd" -l"libc.a" 
