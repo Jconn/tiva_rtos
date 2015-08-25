@@ -5,8 +5,9 @@
 void InitApplication(uint32_t *osStack, uint32_t * appStack, uint32_t *appStackEnd);
 void SetProcessStack(uint32_t mainStackSize);
 uint32_t * CreateThread();
-void ContextSwitch(uint32_t * conRetAddr);
+void LogContextSwitch(uint32_t * conRetAddr);
 void OsReturn(void);
 void RestoreRegisters(uint32_t *returnThread);
-void ContextSwitchEnd();
+uint32_t* ContextSwitchEnd();
+void EnableSystick();
 #endif /*RTOS_INIT_H*/

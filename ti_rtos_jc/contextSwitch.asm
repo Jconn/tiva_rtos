@@ -7,11 +7,8 @@
 
 	.thumb
 
-
     .text
-	.align 4
 
-mynewlabel	.equ 0xFFFFFFFD
 
     .align 2
 
@@ -31,20 +28,56 @@ InitRtos: .asmfunc
 	;	   here because we return from the exception with the psp
 	;	   might want to recover these bytes
 	mov sp, r4
+	push {lr}
+	bl EnableSystick
+	pop {lr}
 	mov pc, lr
+	;TODO: find out how to enable systick exceptions
 	.endasmfunc
+	;now we have to load our registers...
 
+disableSysTick: .asmfunc
+	movw r2, #0xE010
+	movt r2, #0xE000
+	ldr r3, [r2]
+	orr r3, r3, #0x0
+	str r3, [r2]
+	bx lr
+	.endasmfunc
+enableSysTick: .asmfunc
+	movw r2, #0xE010
+	movt r2, #0xE000
+	ldr r3, [r2]
+	orr r3, r3, #0x3
+	str r3, [r2]
+	bx lr
+	.endasmfunc
 ;used to create a new thread, called from user
 	.export SpawnThread
 SpawnThread: .asmfunc
+	;turning off systick interrupt for this, because I don't want a systick to occur here...
+	;would be bad...
+	;TODO: disable all interrupts
+	;need to disable the systick while thread creation is occuring
+	push {lr}
+	bl disableSysTick
+	pop {lr}
 	mov r1, r0
 	mov r0, #1
 	svc #1
 	;returned from SVC, our stack is set up
 	;we need to move our new stack value (stored in r4 - this was arbitrary)
 	;	and branch to the function associated with this stack(in r1)
+ 	;TODO: the initial thread...needs to return to the right place
+ 	;we can do whatever we want with r4-r7, no C is using
+ 	;them yet since this is the first thing that happens
+ 	;in the new thread
  	mov sp, r4
+	;this should alter where the other thread returns to
+	str r6, [r5]
+ 	bl enableSysTick
 	mov lr, r1
+
 	bx lr
 	.endasmfunc
 
@@ -57,6 +90,20 @@ SaveRegisters:	.asmfunc
 	bx lr
 	.endasmfunc
 
+	.export AlterOriginsReturn
+	.thumbfunc AlterOriginsReturn
+AlterOriginsReturn:	.asmfunc
+	;this is only called when we make a new thread, we need the old thread to
+	;operate normally
+	add r2, r0, #0x34
+	ldr r3, [r2]
+	;fuck it, not working, we'll just load the lr
+	;into the pc, grabbing both from memory
+	;ldr r3, =threadReturn
+	add r2, r2, #0x4
+	str r3, [r2]
+	bx lr
+	.endasmfunc
 ;used to return to the application after context switch. SW restoring of registers
 	.export RestoreRegisters
 RestoreRegisters: .asmfunc
@@ -67,6 +114,7 @@ RestoreRegisters: .asmfunc
 	ldm r0, {r4-r11}
 	add r0,	r0,	#0x20
 	msr	psp, r0
+	bx lr
 	.endasmfunc
 
 ;used to return to the application after SVC call
@@ -76,6 +124,20 @@ ReturnToApp: .asmfunc
 	bx	lr
 	.endasmfunc
 
+	.export SysTickHandler
+SysTickHandler: .asmfunc
+	push {lr}
+	bl SaveRegisters
+	;logcontext switch will handle switching to
+	;the next thread, also calls restore registers
+	bl LogContextSwitch
+	bl ContextSwitchEnd
+	;r0 contains the pointer for SW register restore
+	bl RestoreRegisters
+	pop {lr}
+	;returning back to process stack
+	bx lr
+	.endasmfunc
 ;Exception Handler for svc command
 	.export SVCallTopLevelHandler
 	.thumbfunc SVCallTopLevelHandler
@@ -104,13 +166,24 @@ ThreadCreation:	cmp r0, #1
 	bne SetOSStack
 	;r0 contains the pointer to the function run by this thread
 	bl SaveRegisters
+	add r5, r0, #0x34
+	ldr r6, [r5]
+	;fuck it, not working, we'll just load the lr
+	;into the pc, grabbing both from memory
+	;ldr r3, =threadReturn
+	add r5, r5, #0x4
+	bl LogContextSwitch
 	bl CreateThread
 	;now we just need to store our new thread's stack in a special register
 	;and call it a day
 	;r4: contains the new SP
 	mov r4, r0
+	;r5 contains the memory location where the previous thread's stack pointer will
+	;be restored
+	;r6 contains the value that the previous thread's stack pointer should be
 	;now we can return to the user
 	b ReturnToApp
+
 	;case 2: initializing the rtos
 SetOSStack:	cmp r0, #2
 	bne Default

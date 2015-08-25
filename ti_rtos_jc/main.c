@@ -9,7 +9,8 @@
 void set_SVC(char * stack);
 void InitRtos(void);
 void SysCallHandler(uint8_t sysNumber);
-void TestFn(void);
+void TestFn1(void);
+void TestFn2(void);
 void SpawnThread(void (*fnpointer)(void) );
 /*
  * Initial test for rolling an rtos
@@ -19,15 +20,19 @@ void SpawnThread(void (*fnpointer)(void) );
  */
 int main(){
 	InitRtos();
-	SpawnThread(&TestFn);
-
+	SpawnThread(&TestFn1);
+//	SpawnThread(&TestFn2);
 	while(1);
 	return 0;
 
 }
 
 
-void TestFn(void){
+void TestFn1(void){
 	while(1);
 
+}
+
+void TestFn2(void){
+	while(1);
 }
