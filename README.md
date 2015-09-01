@@ -1,5 +1,5 @@
 # tiva_rtos
-tiva tm4c123h6pmi rtos \n
+tiva tm4c123h6pmi rtos
 This repo was a side project I did in the summer to try and get multi-threading working on TI's Tiva Launchpad.
 All I did for new threads was split up the stack (I specified my stack as 16KB) into 1KB chunks 
 and then assign one of these chunks to a thread.
